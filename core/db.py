@@ -1,19 +1,14 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from typing import Annotated
+
+from fastapi import Depends
+from sqlmodel import create_engine, Session
 
 DATABASE_URL = "sqlite:///./sales.db"
 
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
-)
+engine = create_engine(DATABASE_URL, echo=True)
 
-Base = declarative_base()
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def get_session():
+    with Session(engine) as session:
+        yield session
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+SessionDep = Annotated[Session, Depends(get_session)]
