@@ -7,7 +7,7 @@ def crate_sale(
     session: SessionDep,
     data: SaleCreate,
 ) -> Sale:
-    sale = Sale(**data.dict())
+    sale = Sale(**data.model_dump())
     session.add(sale)
     session.commit()
     session.refresh(sale)
@@ -22,7 +22,7 @@ def update_sale(
     if not sale:
         raise HTTPException(status_code=404, detail="Sale not found")
 
-    update_data = data.dict(exclude_unset=True)
+    update_data = data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(sale, key, value)
 
