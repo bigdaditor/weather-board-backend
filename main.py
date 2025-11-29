@@ -3,7 +3,11 @@ from sqlmodel import SQLModel
 from core.db import engine, SessionDep
 from dotenv import load_dotenv
 from models.sale import Sale, SaleCreate, SaleUpdate
+from models.weather import Weather
 from service.sale import crate_sale, update_sale
+from service.weather import create_weather, read_weathers_by_input_date
+from typing import List
+
 load_dotenv()
 
 # 테이블 생성
@@ -29,3 +33,15 @@ def update_sale_point(
     sale: SaleUpdate,
 ) -> Sale:
     return update_sale(session, sale_id, sale)
+
+@app.get("/weathers", response_model=List[Weather])
+def get_weather_points(
+    session: SessionDep,
+) -> list[Weather]:
+    return read_weathers_by_input_date(session)
+
+@app.post("/weather", response_model=List[Weather])
+def create_weather_point(
+    session: SessionDep,
+) -> list[Weather]:
+    return create_weather(session)
