@@ -1,3 +1,5 @@
+from typing import List
+
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from httpx import Client
@@ -10,34 +12,6 @@ from utils.weather_classifier import *
 import os
 
 load_dotenv()
-
-def fetch_weather_data(
-    start_date: str,
-    end_date: str,
-):
-    URL = "http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList"
-    http = Client()
-    service_key = os.getenv("KMA_SERVICE_KEY")
-    params = {
-        "serviceKey": service_key,
-        "numOfRows": 10,
-        "pageNo": 1,
-        "dataType": "JSON",
-        "dataCd": "ASOS",
-        "dateCd": "DAY",
-        "startDt": start_date,
-        "endDt": end_date,
-        "stnIds": 108
-    }
-
-    response = http.get(URL, params=params)
-    data = response.json().get("response")
-    header = data.get("header", {})
-    if header.get("resultCode") != "00":
-        raise Exception("No weather data found")
-
-    body = data.get("body", {})
-    return body
 
 def create_weather(
     session: SessionDep,
@@ -90,11 +64,39 @@ def create_weather(
         session.commit()
     return read_weathers_by_input_date(session, start_dt, end_dt)
 
+def fetch_weather_data(
+    start_date: str,
+    end_date: str,
+):
+    URL = "http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList"
+    http = Client()
+    service_key = os.getenv("KMA_SERVICE_KEY")
+    params = {
+        "serviceKey": service_key,
+        "numOfRows": 10,
+        "pageNo": 1,
+        "dataType": "JSON",
+        "dataCd": "ASOS",
+        "dateCd": "DAY",
+        "startDt": start_date,
+        "endDt": end_date,
+        "stnIds": 108
+    }
+
+    response = http.get(URL, params=params)
+    data = response.json().get("response")
+    header = data.get("header", {})
+    if header.get("resultCode") != "00":
+        raise Exception("No weather data found")
+
+    body = data.get("body", {})
+    return body
+
 def read_weathers_by_input_date(
     session: SessionDep,
     start_date: str,
     end_date: str
-) -> list[Weather]:
+) -> List[Weather]:
     weathers = session.exec(
         select(Weather)
         .where(Weather.date >= start_date, Weather.date <= end_date)
