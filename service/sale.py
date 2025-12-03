@@ -2,6 +2,8 @@ from fastapi import HTTPException
 
 from models.sale import Sale, SaleCreate, SaleUpdate
 from core.db import SessionDep
+from sqlmodel import select
+from typing import List
 
 def crate_sale(
     session: SessionDep,
@@ -11,6 +13,27 @@ def crate_sale(
     session.add(sale)
     session.commit()
     session.refresh(sale)
+    return sale
+
+def get_sales(
+    session: SessionDep,
+) -> List[Sale]:
+    sales = session.exec(
+        select(Sale)
+    ).all()
+
+    if not sales:
+        raise HTTPException(status_code=404, detail="Sales not found")
+    return sales
+
+def get_sale(
+    session: SessionDep,
+    sale_id: int,
+) -> Sale:
+    sale = session.get(Sale, sale_id)
+
+    if not sale:
+        raise HTTPException(status_code=404, detail="Sale not found")
     return sale
 
 def update_sale(
