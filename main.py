@@ -1,12 +1,14 @@
 from fastapi import FastAPI
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session
+from starlette.middleware.cors import CORSMiddleware
+
 from core.db import engine, SessionDep
 from dotenv import load_dotenv
 from models.sale import Sale, SaleCreate, SaleUpdate
 from models.weather import Weather
-from service.sale import crate_sale, update_sale
+from service.sale import crate_sale, update_sale, get_sales, get_sale
 from service.weather import create_weather, read_weathers_by_input_date
-from typing import List
+from typing import List, Any
 
 load_dotenv()
 
@@ -15,6 +17,18 @@ SQLModel.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],      # OPTIONS, POST, GET 전부 허용
+    allow_headers=["*"],      # Content-Type, Authorization 등
+)
 @app.get("/")
 async def root():
     return {"message": "Hello WeatherBoard"}
@@ -26,6 +40,19 @@ def create_sale_point(
 ) -> Sale:
     return crate_sale(session, sale)
 
+@app.get("/sale", response_model=List[Sale])
+def get_sales_point(
+    session: SessionDep
+) -> List[Sale]:
+    return get_sales(session)
+
+@app.get("/sale/{sale_id}", response_model=Sale)
+def get_sale_point(
+    session: SessionDep,
+    sale_id: int,
+) -> Sale:
+    return get_sale(session, sale_id)
+
 @app.patch("/sale/{sale_id}", response_model=Sale)
 def update_sale_point(
     session: SessionDep,
@@ -34,14 +61,15 @@ def update_sale_point(
 ) -> Sale:
     return update_sale(session, sale_id, sale)
 
-@app.get("/weathers", response_model=List[Weather])
-def get_weather_points(
-    session: SessionDep,
-) -> list[Weather]:
-    return read_weathers_by_input_date(session)
-
 @app.post("/weather", response_model=List[Weather])
 def create_weather_point(
     session: SessionDep,
-) -> list[Weather]:
+) -> List[Weather]:
     return create_weather(session)
+
+
+@app.get("/weather", response_model=List[Weather])
+def get_weathers_point(
+    session: SessionDep,
+) -> List[Weather]:
+    return read_weathers_by_input_date(session)
