@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from sqlmodel import SQLModel, Session
 from starlette.middleware.cors import CORSMiddleware
 
 from core.db import engine, SessionDep
 from dotenv import load_dotenv
-from models.sale import Sale, SaleCreate, SaleUpdate
+from models.sale import Sale, SaleCreate, SaleUpdate, SaleListResponse
 from models.weather import Weather
 from service.sale import crate_sale, update_sale, get_sales, get_sale
 from service.weather import create_weather, read_weathers_by_input_date
@@ -40,11 +40,13 @@ def create_sale_point(
 ) -> Sale:
     return crate_sale(session, sale)
 
-@app.get("/sale", response_model=List[Sale])
+@app.get("/sale", response_model=SaleListResponse)
 def get_sales_point(
-    session: SessionDep
-) -> List[Sale]:
-    return get_sales(session)
+    session: SessionDep,
+    page: int = Query(1, ge=1, description="페이지 번호"),
+    page_size: int = Query(10, ge=1, le=100, description="페이지당 항목 수")
+) -> SaleListResponse:
+    return get_sales(session, page, page_size)
 
 @app.get("/sale/{sale_id}", response_model=Sale)
 def get_sale_point(

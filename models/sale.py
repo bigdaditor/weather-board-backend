@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 from sqlmodel import SQLModel, Field
 
 class Sale(SQLModel, table=True):
@@ -24,3 +24,15 @@ class SaleUpdate(SQLModel):
     amount: int
     payment_type: str
     sync_status: int = 0
+
+class DailySaleByPaymentType(SQLModel):
+    date: str
+    payment_types: Dict[str, int]  # {payment_type: amount}
+    total_amount: int
+
+class SaleListResponse(SQLModel):
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    data: List[DailySaleByPaymentType]
