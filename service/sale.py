@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from collections import defaultdict
 from math import ceil
 
-from models.sale import Sale, SaleCreate, SaleUpdate, SaleListResponse, DailySaleByPaymentType
+from models.sale import Sale, SaleCreate, SaleUpdate, SaleListResponse, DailySaleByPaymentType, SaleDelete, MonthlySaleResponse, DailySaleTotal
 from core.db import SessionDep
 from sqlmodel import select
 from typing import List
@@ -82,20 +82,77 @@ def get_sale(
         raise HTTPException(status_code=404, detail="Sale not found")
     return sale
 
+def get_sale_by_month(
+    session: SessionDep,
+    month: str,
+) -> MonthlySaleResponse:
+    print(month)
+    # YYYY-MM 형식으로 시작하는 날짜 필터링
+    sales = session.exec(
+        select(Sale)
+        .where(Sale.input_date.startswith(month))
+        .order_by(Sale.input_date)
+    ).all()
+
+    if not sales:
+        raise HTTPException(status_code=404, detail="Sales not found")
+
+    # 날짜별로 총 금액 집계
+    daily_totals = defaultdict(int)
+
+    for sale in sales:
+        daily_totals[sale.input_date] += sale.amount
+
+    # DailySaleTotal 리스트 생성
+    daily_sales_list = []
+    for date, total_amount in sorted(daily_totals.items()):
+        daily_sales_list.append(
+            DailySaleTotal(
+                date=date,
+                total_amount=total_amount
+            )
+        )
+
+    return MonthlySaleResponse(data=daily_sales_list)
+    
+
 def update_sale(
     session: SessionDep,
-    sale_id: int,
     data: SaleUpdate,
 ) -> Sale:
-    sale = session.get(Sale, sale_id)
+    # input_date와 payment_type으로 sale 조회
+    sale = session.exec(
+        select(Sale)
+        .where(Sale.input_date == data.input_date)
+        .where(Sale.payment_type == data.payment_type)
+    ).first()
+
     if not sale:
         raise HTTPException(status_code=404, detail="Sale not found")
 
-    update_data = data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(sale, key, value)
-
+    # amount와 sync_status 업데이트
+    sale.amount = data.amount
+    sale.sync_status = data.sync_status
     session.add(sale)
     session.commit()
     session.refresh(sale)
+    return sale
+
+def delete_sale(
+    session: SessionDep,
+    data: SaleDelete,
+) -> Sale:
+    # input_date와 payment_type으로 sale 조회
+    sale = session.exec(
+        select(Sale)
+        .where(Sale.input_date == data.input_date)
+        .where(Sale.payment_type == data.payment_type)
+    ).one()
+
+    if not sale:
+        raise HTTPException(status_code=404, detail="Sale not found")
+
+    # sale 삭제
+    session.delete(sale)
+    session.commit()
     return sale

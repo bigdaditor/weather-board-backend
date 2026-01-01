@@ -25,6 +25,10 @@ class SaleUpdate(SQLModel):
     payment_type: str
     sync_status: int = 0
 
+class SaleDelete(SQLModel):
+    input_date: str
+    payment_type: str
+
 class DailySaleByPaymentType(SQLModel):
     date: str
     payment_types: Dict[str, int]  # {payment_type: amount}
@@ -36,3 +40,10 @@ class SaleListResponse(SQLModel):
     page_size: int
     total_pages: int
     data: List[DailySaleByPaymentType]
+
+class DailySaleTotal(SQLModel):
+    date: str
+    total_amount: int
+
+class MonthlySaleResponse(SQLModel):
+    data: List[DailySaleTotal]
