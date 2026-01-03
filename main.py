@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Query
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlmodel import SQLModel
 from starlette.middleware.cors import CORSMiddleware
 
@@ -11,6 +13,7 @@ from service.sale import crate_sale, update_sale, get_sales, get_sale, delete_sa
 from service.weather import create_weather, read_weathers_by_input_date
 from service.sale_statistics import get_statistics, get_statistics_summary
 from typing import List, Any, Optional
+from pathlib import Path
 
 load_dotenv()
 
@@ -22,6 +25,8 @@ app = FastAPI()
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 app.add_middleware(
@@ -31,9 +36,9 @@ app.add_middleware(
     allow_methods=["*"],      # OPTIONS, POST, GET 전부 허용
     allow_headers=["*"],      # Content-Type, Authorization 등
 )
-@app.get("/")
-async def root():
-    return {"message": "Hello WeatherBoard"}
+
+# 프론트엔드 빌드 파일 경로
+FRONTEND_DIST = Path(__file__).parent.parent / "weather-board-frontend" / "dist"
 
 @app.post("/sale", response_model=Sale)
 def create_sale_point(
@@ -136,3 +141,28 @@ def get_statistics_summary_point(
         period_type=period_type,
         payment_type=payment_type
     )
+
+
+# 프론트엔드 정적 파일 서빙 (운영 환경)
+if FRONTEND_DIST.exists():
+    # React 빌드 파일의 assets 폴더 서빙
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
+    # SPA를 위한 catch-all 라우트 (모든 경로를 index.html로)
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # API 경로가 아닌 경우에만 index.html 반환
+        if not full_path.startswith("sale") and not full_path.startswith("weather") and not full_path.startswith("statistics"):
+            index_path = FRONTEND_DIST / "index.html"
+            if index_path.exists():
+                return FileResponse(index_path)
+        return {"message": "Not Found"}
+else:
+    # 개발 환경: 프론트엔드가 빌드되지 않은 경우 안내 메시지
+    @app.get("/")
+    async def root():
+        return {
+            "message": "Weather Board API",
+            "note": "프론트엔드를 사용하려면 먼저 빌드하세요: npm run build",
+            "dev_mode": "개발 모드에서는 프론트엔드를 별도로 실행하세요: npm run dev"
+        }
