@@ -142,27 +142,3 @@ def get_statistics_summary_point(
         payment_type=payment_type
     )
 
-
-# 프론트엔드 정적 파일 서빙 (운영 환경)
-if FRONTEND_DIST.exists():
-    # React 빌드 파일의 assets 폴더 서빙
-    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
-
-    # SPA를 위한 catch-all 라우트 (모든 경로를 index.html로)
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        # API 경로가 아닌 경우에만 index.html 반환
-        if not full_path.startswith("sale") and not full_path.startswith("weather") and not full_path.startswith("statistics"):
-            index_path = FRONTEND_DIST / "index.html"
-            if index_path.exists():
-                return FileResponse(index_path)
-        return {"message": "Not Found"}
-else:
-    # 개발 환경: 프론트엔드가 빌드되지 않은 경우 안내 메시지
-    @app.get("/")
-    async def root():
-        return {
-            "message": "Weather Board API",
-            "note": "프론트엔드를 사용하려면 먼저 빌드하세요: npm run build",
-            "dev_mode": "개발 모드에서는 프론트엔드를 별도로 실행하세요: npm run dev"
-        }
