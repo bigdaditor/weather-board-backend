@@ -46,3 +46,10 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+
+# Documentation (except README.md)
+*.md
+!README.md
+
+# HTTP Test Files
+test_main.http
