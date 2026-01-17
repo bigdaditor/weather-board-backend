@@ -12,10 +12,10 @@ def classify_rain(one_hour_rain: float) -> str:
     - 50 ≤ one_hour_rain         : 극심한 폭우
     """
     if one_hour_rain is None:
-        return "비 안옴"
+        return ""
     if one_hour_rain <= 0:
-        return "비 안옴"
-    return "비옴"
+        return ""
+    return "강우"
 
 def classify_sky(avg_total_cloud: float) -> str:
     """
@@ -23,11 +23,6 @@ def classify_sky(avg_total_cloud: float) -> str:
     :param avg_total_cloud:
     :return:
     """
-    sky_status = ""
     if avg_total_cloud <= 0.54:
-        sky_status = "맑음"
-    elif avg_total_cloud <= 0.84:
-        sky_status = "구름 많음"
-    elif avg_total_cloud <= 10:
-        sky_status = "흐림"
-    return sky_status
+        return "맑음"
+    return "흐림"

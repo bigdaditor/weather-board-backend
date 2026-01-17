@@ -43,7 +43,8 @@ def create_weather(
         one_hour_rain = float(item["hr1MaxRn"] if item["hr1MaxRn"] !="" else 0)
         avg_total_cloud = float(item["avgTca"] if item["avgTca"] != "" else 0)
 
-        summary = classify_sky(avg_total_cloud) + " / " + classify_rain(one_hour_rain)
+        rain_status = classify_rain(one_hour_rain)
+        summary = rain_status or classify_sky(avg_total_cloud)
 
         new_weather = Weather(
             date = item["tm"],
