@@ -79,6 +79,7 @@ python scripts/migrate_weather_summary.py --db sales.db
 - SQLite 데이터베이스는 `sales.db` 파일로 저장됩니다
 - 테이블은 애플리케이션 시작 시 자동으로 생성됩니다
 - 데이터베이스 스키마 변경 시 기존 데이터 백업을 권장합니다
+- 쓰기 오류가 나면 `DATABASE_URL` 환경변수로 경로를 지정하세요
 
 ## 라이선스
 
