@@ -19,9 +19,7 @@ def create_weather_point(
 def get_weathers_point(
     session: SessionDep,
     month: Optional[str] = Query(None, description="월(YYYY-MM)"),
-    key: Optional[str] = Query(None, description="월(YYYY-MM)"),
 ) -> List[Weather]:
-    target_month = month or key
-    if target_month:
-        return read_weathers_by_month(session, target_month)
+    if month:
+        return read_weathers_by_month(session, month)
     raise HTTPException(status_code=400, detail="month query parameter is required")

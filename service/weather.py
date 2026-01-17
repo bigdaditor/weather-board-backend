@@ -103,3 +103,15 @@ def read_weathers_by_input_date(
         .order_by(Weather.date)
     ).all()
     return weathers
+
+
+def read_weathers_by_month(
+    session: SessionDep,
+    month: str,
+) -> List[Weather]:
+    weathers = session.exec(
+        select(Weather)
+        .where(Weather.date.startswith(month))
+        .order_by(Weather.date)
+    ).all()
+    return weathers

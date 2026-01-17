@@ -540,12 +540,17 @@ POST /weather
 ---
 
 ### 2. 날씨 데이터 조회
-입력 날짜로 날씨 데이터를 조회합니다.
+월 단위로 날씨 데이터를 조회합니다.
 
 **Endpoint**
 ```
-GET /weather
+GET /weather?month=2024-01
 ```
+
+**Query Parameters**
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|------|--------|------|
+| month | string | O | - | 조회 월 (YYYY-MM) |
 
 **Response**
 ```json
