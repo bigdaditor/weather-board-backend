@@ -204,22 +204,20 @@ PATCH /sale/{sale_id}
 
 ### 통계 데이터 생성
 
-통계 데이터는 `calculate_statistics.py` 스크립트를 실행하여 생성합니다.
+통계 데이터는 API를 통해 재계산합니다.
 
 ```bash
-python calculate_statistics.py
+POST /statistics/recompute
 ```
 
-이 스크립트는:
-1. `sale_statistics` 테이블을 생성 (없는 경우)
-2. 기존 통계 데이터 삭제 후 재계산
-3. `sale` 테이블의 모든 데이터를 읽어서 통계 계산
-4. 주별/월별, 전체/결제타입별 통계를 모두 생성
+이 요청은:
+1. 기존 통계 데이터 삭제 후 재계산
+2. `sale` 테이블의 모든 데이터를 읽어서 통계 계산
+3. 주별/월별, 전체/결제타입별 통계를 모두 생성
 
 **주의사항:**
 - 주 단위는 **월요일부터 토요일**까지입니다
 - 일요일은 다음 주의 월요일로 분류됩니다
-- 새로운 판매 데이터 추가 시 스크립트를 다시 실행하세요
 
 ---
 
@@ -335,6 +333,113 @@ GET /statistics/summary/month
 주별 특정 결제 타입:
 ```
 GET /statistics/summary/week?payment_type=etc
+```
+
+**Status Codes**
+- `200 OK`: 성공
+
+---
+
+### 3. 날씨별 월별 매출 추이
+
+날씨 요약 기준으로 월별 매출 합계를 제공합니다.
+
+**Endpoint**
+```
+GET /statistics/weather/monthly
+```
+
+**Query Parameters**
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|------|--------|------|
+| summary | string | X | - | 날씨 요약 필터 (예: `맑음 / 강우 없음`) |
+| summary_sky | string | X | - | 하늘 상태 필터 (예: `맑음`) |
+| summary_rain | string | X | - | 강우 상태 필터 (예: `강우 없음`) |
+| group_by | string | X | - | 요약 분리 기준 (`sky`, `rain`, `both`) |
+
+**Response**
+```json
+[
+  {
+    "category_type": "sky",
+    "summary": "맑음",
+    "data": [
+      {
+        "month": "2025-01",
+        "total_amount": 230000
+      },
+      {
+        "month": "2025-02",
+        "total_amount": 180000
+      }
+    ]
+  },
+  {
+    "category_type": "rain",
+    "summary": "강우 없음",
+    "data": [
+      {
+        "month": "2025-01",
+        "total_amount": 120000
+      }
+    ]
+  }
+]
+```
+
+**Status Codes**
+- `200 OK`: 성공
+
+---
+
+### 4. 통계 재계산 요청
+
+판매 통계를 즉시 재계산합니다.
+
+**Endpoint**
+```
+POST /statistics/recompute
+```
+
+**Response**
+```json
+{
+  "status": "ok"
+}
+```
+
+**Status Codes**
+- `200 OK`: 성공
+
+---
+
+### 5. 일별 매출 통계 (결제 수단별)
+
+일별 매출을 결제 수단별로 집계해 제공합니다.
+
+**Endpoint**
+```
+GET /statistics/daily
+```
+
+**Query Parameters**
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|------|--------|------|
+| start_date | string | X | - | 조회 시작 날짜 (YYYY-MM-DD) |
+| end_date | string | X | - | 조회 종료 날짜 (YYYY-MM-DD) |
+
+**Response**
+```json
+[
+  {
+    "date": "2025-01-02",
+    "payment_types": {
+      "card": 120000,
+      "cash": 45000
+    },
+    "total_amount": 165000
+  }
+]
 ```
 
 **Status Codes**

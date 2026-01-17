@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional, List, Dict
 from sqlmodel import SQLModel, Field
 
 
@@ -51,3 +51,20 @@ class SaleStatisticsResponse(SQLModel):
     avg_amount: float
     created_at: datetime
     updated_at: datetime
+
+
+class WeatherMonthlySales(SQLModel):
+    month: str
+    total_amount: int
+
+
+class WeatherMonthlySalesTrend(SQLModel):
+    category_type: str
+    summary: str
+    data: List[WeatherMonthlySales]
+
+
+class DailySalesByPaymentType(SQLModel):
+    date: str
+    payment_types: Dict[str, int]
+    total_amount: int

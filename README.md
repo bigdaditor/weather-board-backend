@@ -48,6 +48,9 @@ Weather Board Backend는 일일 판매 데이터와 날씨 정보를 통합 관�
 |--------|----------|------|
 | GET | `/statistics` | 판매 통계 조회 |
 | GET | `/statistics/summary/{period_type}` | 통계 요약 조회 |
+| GET | `/statistics/weather/monthly` | 날씨별 월별 매출 추이 (sky/rain/both, 필터 지원) |
+| GET | `/statistics/daily` | 결제 수단별 일별 매출 통계 |
+| POST | `/statistics/recompute` | 통계 재계산 요청 |
 
 ## CORS 설정
 
