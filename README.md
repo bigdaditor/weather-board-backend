@@ -66,6 +66,14 @@ Weather Board Backend는 일일 판매 데이터와 날씨 정보를 통합 관�
 
 프로젝트에 포함된 `test_main.http` 파일을 사용하여 API를 테스트할 수 있습니다.
 
+### 데이터 마이그레이션
+
+날씨 요약 값을 `맑음/흐림/강우`로 통일하려면 아래 스크립트를 실행하세요.
+
+```bash
+python scripts/migrate_weather_summary.py --db sales.db
+```
+
 ### 데이터베이스
 
 - SQLite 데이터베이스는 `sales.db` 파일로 저장됩니다

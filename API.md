@@ -474,13 +474,7 @@ GET /statistics/summary/month
 새로운 판매 데이터가 추가되면 통계를 재계산해야 합니다:
 
 ```bash
-python calculate_statistics.py
-```
-
-자동화 예시 (crontab):
-```bash
-# 매일 자정에 통계 재계산
-0 0 * * * cd /path/to/weather-board-backend && python calculate_statistics.py
+POST /statistics/recompute
 ```
 
 ---
